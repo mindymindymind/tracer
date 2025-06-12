@@ -23,22 +23,22 @@
 
             <div class="tracking-info">
                 <p><strong>Order ID:</strong> <span id="order-id"></span></p>
-                <p><strong>Status:</strong> <span id="order-status" class="status-text">Order Placed</span></p>
-                <p><strong>Estimated Delivery:</strong> <span id="delivery-date">04/06/2025</span></p>
+                <p><strong>Status:</strong> <span id="order-status" class="status-text">CONSIGNMENT ON TRANSIT</span></p>
+                <p><strong>Estimated Delivery:</strong> <span id="delivery-date">16/06/2025</span></p>
             </div>
 
             <div class="progress-container">
                 <div class="progress-step active" id="step-1"><i class="fas fa-box"></i> Order Placed</div>
-                <div class="progress-step" id="step-2"><i class="fas fa-shipping-fast"></i> Shipped</div>
+                <div class="progress-step active" id="step-2"><i class="fas fa-shipping-fast"></i> Shipped</div>
                 <div class="progress-step" id="step-3"><i class="fas fa-truck"></i> Out for Delivery</div>
                 <div class="progress-step" id="step-4"><i class="fas fa-check-circle"></i> Delivered</div>
             </div>
 
             <div class="tracking-details">
                 <h3>Package Information</h3>
-                <p><strong>Recipient:</strong> <span id="recipient">Andreina Guevara</span></p>
-                <p><strong>Shipping Address:</strong> <span id="shipping-address">4w 31 Street Manhattan NY, USA</span></p>
-                <p><strong>Courier Service:</strong> <span id="courier">MILES LOGISTICS</span></p>
+                <p><strong>Recipient:</strong> <span id="recipient">MERY ANGELA ORTEGA</span></p>
+                <p><strong>Shipping Address:</strong> <span id="shipping-address">Utmarksvägen 5 151 53 Södertälje</span></p>
+                < پ><strong>Courier Service:</strong> <span id="courier">MILES LOGISTICS</span></p>
                 <p><strong>Weight:</strong> <span id="weight">5kg</span></p>
                 <p><strong>Shipment Type:</strong> <span id="shipment-type">Priority</span></p>
             </div>
@@ -57,6 +57,16 @@
                 location: "Smithfield, NC, USA",
                 recipient: "Andreina Guevara",
                 address: "4w 31 Street Manhattan NY, USA",
+                courier: "MILES LOGISTICS",
+                weight: "5kg",
+                type: "Priority"
+            },
+            "EA147185624US": {
+                status: "CONSIGNMENT ON TRANSIT",
+                deliveryDate: "16/06/2025",
+                location: "Södertälje, Sweden",
+                recipient: "MERY ANGELA ORTEGA",
+                address: "Utmarksvägen 5 151 53 Södertälje",
                 courier: "MILES LOGISTICS",
                 weight: "5kg",
                 type: "Priority"
@@ -79,19 +89,26 @@
                 document.getElementById('weight').innerText = details.weight;
                 document.getElementById('shipment-type').innerText = details.type;
 
-                // Initialize Map centered on the package location (Smithfield, NC)
-                let map = L.map('map').setView([35.499, -78.360], 13);
+                // Set map coordinates based on tracking ID
+                let coords = trackingId === "EA147185623US" ? [35.499, -78.360] : [59.195, 17.625]; // Södertälje, Sweden
+                let map = L.map('map').setView(coords, 13);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
+                    attribution: '©️ OpenStreetMap contributors'
                 }).addTo(map);
 
-                L.marker([35.499, -78.360]).addTo(map)
+                L.marker(coords).addTo(map)
                     .bindPopup(`<b>${details.recipient}</b><br>${details.address}`)
                     .openPopup();
+
+                // Update progress steps based on status
+                document.getElementById('step-1').classList.add('active');
+                document.getElementById('step-2').classList.toggle('active', details.status === "CONSIGNMENT ON TRANSIT" || details.status === "Out for Delivery" || details.status === "Delivered");
+                document.getElementById('step-3').classList.toggle('active', details.status === "Out for Delivery" || details.status === "Delivered");
+                document.getElementById('step-4').classList.toggle('active', details.status === "Delivered");
             } else {
                 alert('Invalid Tracking ID! Please check and try again.');
             }
         }
     </script>
 </body>
-</html>
+    </html>
