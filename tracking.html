@@ -7,6 +7,62 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="css/tracking.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        .tracking-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .tracking-input {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tracking-input input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .tracking-input button {
+            padding: 10px 20px;
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .tracking-input button i {
+            margin-right: 5px;
+        }
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .progress-step {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        .progress-step.active {
+            background: #0078d7;
+            color: white;
+        }
+        .tracking-info p, .tracking-details p {
+            margin: 5px 0;
+        }
+    </style>
 </head>
 <body>
     <div class="tracking-container">
@@ -23,28 +79,27 @@
 
             <div class="tracking-info">
                 <p><strong>Order ID:</strong> <span id="order-id"></span></p>
-                <p><strong>Status:</strong> <span id="order-status" class="status-text">CONSIGNMENT ON HOLD FOR CUSTOMS AIRPORT CLEARANCE</span></p>
-                <p><strong>Estimated Delivery:</strong> <span id="delivery-date">16/06/2025</span></p>
+                <p><strong>Status:</strong> <span id="order-status" class="status-text"></span></p>
+                <p><strong>Estimated Delivery:</strong> <span id="delivery-date"></span></p>
             </div>
 
             <div class="progress-container">
                 <div class="progress-step active" id="step-1"><i class="fas fa-box"></i> Order Placed</div>
-                <div class="progress-step active" id="step-2"><i class="fas fa-shipping-fast"></i> Shipped</div>
+                <div class="progress-step" id="step-2"><i class="fas fa-shipping-fast"></i> Shipped</div>
                 <div class="progress-step" id="step-3"><i class="fas fa-truck"></i> Out for Delivery</div>
                 <div class="progress-step" id="step-4"><i class="fas fa-check-circle"></i> Delivered</div>
             </div>
 
             <div class="tracking-details">
                 <h3>Package Information</h3>
-                <p><strong>Recipient:</strong> <span id="recipient">MERY ANGELA ORTEGA</span></p>
-                <p><strong>Shipping Address:</strong> <span id="shipping-address">Utmarksvägen 5 151 53 Södertälje</span></p>
-                <p><strong>Courier Service:</strong> <span id="courier">MILES LOGISTICS</span></p>
-                <p><strong>Weight:</strong> <span id="weight">5kg</span></p>
-                <p><strong>Shipment Type:</strong> <span id="shipment-type">Priority</span></p>
+                <p><strong>Recipient:</strong> <span id="recipient"></span></p>
+                <p><strong>Shipping Address:</strong> <span id="shipping-address"></span></p>
+                <p><strong>Courier Service:</strong> <span id="courier"></span></p>
+                <p><strong>Weight:</strong> <span id="weight"></span></p>
+                <p><strong>Shipment Type:</strong> <span id="shipment-type"></span></p>
             </div>
 
-            <!-- Live Tracking Map -->
-            <div id="map" style="height: 400px;"></div>
+            <div id="map" style="height: 400px; margin-top: 20px;"></div>
         </div>
     </div>
 
@@ -52,16 +107,6 @@
     <script>
         const trackingDatabase = {
             "LX755803423US": {
-                status: "CONSIGNMENTS On HOLD for Airport Clearance",
-                deliveryDate: "04/06/2025",
-                location: "Smithfield, NC, USA",
-                recipient: "Andreina Guevara",
-                address: "4w 31 Street Manhattan NY, USA",
-                courier: "MILES LOGISTICS",
-                weight: "5kg",
-                type: "Priority"
-            },
-            "EA147185624US": {
                 status: "CONSIGNMENT ON HOLD FOR CUSTOMS AIRPORT CLEARANCE",
                 deliveryDate: "16/06/2025",
                 location: "Södertälje, Sweden",
@@ -74,7 +119,7 @@
         };
 
         function trackOrder() {
-            let trackingId = document.getElementById('tracking-id').value.trim();
+            let trackingId = document.getElementById('tracking-id').value.trim().toUpperCase();
 
             if (trackingDatabase[trackingId]) {
                 let details = trackingDatabase[trackingId];
@@ -89,26 +134,26 @@
                 document.getElementById('weight').innerText = details.weight;
                 document.getElementById('shipment-type').innerText = details.type;
 
-                // Set map coordinates based on tracking ID
-                let coords = trackingId === "LX755803423US" ? [35.499, -78.360] : [59.195, 17.625]; // Södertälje, Sweden
+                // Initialize map
+                document.getElementById("map").innerHTML = ""; // reset for multiple lookups
+                let coords = [59.195, 17.625]; // Södertälje coordinates
                 let map = L.map('map').setView(coords, 13);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '©️ OpenStreetMap contributors'
+                    attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
-
                 L.marker(coords).addTo(map)
                     .bindPopup(`<b>${details.recipient}</b><br>${details.address}`)
                     .openPopup();
 
-                // Update progress steps based on status
+                // Update progress steps
                 document.getElementById('step-1').classList.add('active');
-                document.getElementById('step-2').classList.toggle('active', details.status === "CONSIGNMENT ON TRANSIT" || details.status === "CONSIGNMENT ON HOLD FOR CUSTOMS AIRPORT CLEARANCE" || details.status === "Out for Delivery" || details.status === "Delivered");
-                document.getElementById('step-3').classList.toggle('active', details.status === "Out for Delivery" || details.status === "Delivered");
-                document.getElementById('step-4').classList.toggle('active', details.status === "Delivered");
+                document.getElementById('step-2').classList.add('active');
+                document.getElementById('step-3').classList.remove('active');
+                document.getElementById('step-4').classList.remove('active');
             } else {
                 alert('Invalid Tracking ID! Please check and try again.');
             }
         }
     </script>
 </body>
-                    </html>
+</html>
