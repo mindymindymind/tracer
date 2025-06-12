@@ -51,7 +51,7 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         const trackingDatabase = {
-            "EA147185623US": {
+            "LX755803423US": {
                 status: "CONSIGNMENTS On HOLD for Airport Clearance",
                 deliveryDate: "04/06/2025",
                 location: "Smithfield, NC, USA",
@@ -90,7 +90,7 @@
                 document.getElementById('shipment-type').innerText = details.type;
 
                 // Set map coordinates based on tracking ID
-                let coords = trackingId === "EA147185623US" ? [35.499, -78.360] : [59.195, 17.625]; // Södertälje, Sweden
+                let coords = trackingId === "LX755803423US" ? [35.499, -78.360] : [59.195, 17.625]; // Södertälje, Sweden
                 let map = L.map('map').setView(coords, 13);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '©️ OpenStreetMap contributors'
